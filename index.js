@@ -22,6 +22,8 @@ const urlSchema = new mongoose.Schema({
   short_url: Number
 });
 const Url = mongoose.model('Url', urlSchema);
+app.use(express.urlencoded({ extended: false }));
+
 
 
 app.get('/', function(req, res) {
@@ -42,6 +44,11 @@ let urlCounter = 1;
 
 app.post('/api/shorturl', (req, res) => {
   const inputUrl = req.body.url;
+
+  if (!/^https?:\/\//.test(inputUrl)) {
+  return res.json({ error: 'invalid url' });
+}
+
 
   try {
     const hostname = urlParser.parse(inputUrl).hostname;
@@ -66,7 +73,7 @@ app.post('/api/shorturl', (req, res) => {
   }
 });
 app.get('/api/shorturl/:short_url', async (req, res) => {
-  const short = req.params.short_url;
+const short = parseInt(req.params.short_url);
 
   const data = await Url.findOne({ short_url: short });
   if (data) return res.redirect(data.original_url);
